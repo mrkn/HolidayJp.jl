@@ -34,6 +34,20 @@ Dates.day(d::DateLike) = d.day
         end
     end
 
+    @testset "getholiday" begin
+        @testset "returns a Holiday when the given date is a holiday" begin
+            @test HolidayJp.getholiday(Date("2000-01-01")) isa HolidayJp.Holiday
+            @test HolidayJp.getholiday(DateTime("2000-01-01", "yyyy-mm-dd")) isa HolidayJp.Holiday
+            @test HolidayJp.getholiday(DateLike(2000, 1, 1)) isa HolidayJp.Holiday
+        end
+
+        @testset "returns nothing when the given Date is not a holiday" begin
+            @test HolidayJp.getholiday(Date("2000-01-02")) === nothing
+            @test HolidayJp.getholiday(DateTime("2000-01-02", "yyyy-mm-dd")) === nothing
+            @test HolidayJp.getholiday(DateLike(2000, 1, 2)) === nothing
+        end
+    end
+
     @testset "between" begin
         @testset "returns all holidays when two Date objects are passed" begin
             result = HolidayJp.between(Date("2000-01-01"), Date("2000-12-31"))
