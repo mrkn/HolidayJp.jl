@@ -37,7 +37,7 @@ function between(lower_limit::Date, upper_limit::Date)
         error("lower_limit must be earlier than upper_limit (lower_limit=$(lower_limit), upper_limit=$(upper_limit))")
     end
 
-    [getholiday(d)::Holiday for d in lower_limit:Day(1):upper_limit if isholiday(d)]
+    [h for h in values(HOLIDAYS[]) if lower_limit <= h.date <= upper_limit]
 end
 
 function __init__()
