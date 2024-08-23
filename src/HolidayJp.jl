@@ -1,6 +1,7 @@
 module HolidayJp
 
 import Dates: Date, DateTime, Day, year, month, day
+import OrderedCollections: OrderedDict
 import YAML
 
 Base.@kwdef struct Holiday
@@ -20,7 +21,7 @@ function Holiday(params::AbstractDict)
 end
 
 const KeyType = NTuple{3, Int}
-const HolidayDict = Dict{KeyType, Holiday}
+const HolidayDict = OrderedDict{KeyType, Holiday}
 const HOLIDAYS = Ref{HolidayDict}()
 
 isholiday(key::KeyType) = haskey(HOLIDAYS[], key)
@@ -41,8 +42,8 @@ end
 
 function __init__()
     data_dir = joinpath(dirname(@__DIR__), "data")
-    dataset = YAML.load_file(joinpath(data_dir, "holidays_detailed.yml"))
-    HOLIDAYS[] = Dict((year(date), month(date), day(date)) => Holiday(params) for (date, params) in dataset)
+    dataset = YAML.load_file(joinpath(data_dir, "holidays_detailed.yml"); dicttype=OrderedDict{Any, Any})
+    HOLIDAYS[] = OrderedDict((year(date), month(date), day(date)) => Holiday(params) for (date, params) in dataset)
 end
 
 end
