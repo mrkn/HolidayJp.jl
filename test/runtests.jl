@@ -33,6 +33,38 @@ Dates.day(d::DateLike) = d.day
             @test HolidayJp.isholiday(DateLike(2000, 1, 2)) === false
         end
     end
+
+    @testset "between" begin
+        @testset "returns all holidays when two Date objects are passed" begin
+            result = HolidayJp.between(Date("2000-01-01"), Date("2000-12-31"))
+            @test result isa Vector{HolidayJp.Holiday}
+            @test [h.date::Date for h in result] == [
+                Date("2000-01-01"),
+                Date("2000-01-10"),
+                Date("2000-02-11"),
+                Date("2000-03-20"),
+                Date("2000-04-29"),
+                Date("2000-05-03"),
+                Date("2000-05-04"),
+                Date("2000-05-05"),
+                Date("2000-07-20"),
+                Date("2000-09-15"),
+                Date("2000-09-23"),
+                Date("2000-10-09"),
+                Date("2000-11-03"),
+                Date("2000-11-23"),
+                Date("2000-12-23")
+            ]
+        end
+
+        @testset "returns Holiday[] when the given range are out of scope" begin
+            @test HolidayJp.Holiday[] == HolidayJp.between(Date("1900-01-01"), Date("1900-12-31"))
+
+            year = Dates.year(Dates.today()) + 500
+            @test HolidayJp.Holiday[] == HolidayJp.between(Date(year, 1, 1), Date(year, 12, 31))
+        end
+    end
+
 end
 
 end
