@@ -63,6 +63,10 @@ Dates.day(d::DateLike) = d.day
             year = Dates.year(Dates.today()) + 500
             @test HolidayJp.Holiday[] == HolidayJp.between(Date(year, 1, 1), Date(year, 12, 31))
         end
+
+        @testset "raise error when the lower limit is future than the upper limit" begin
+            @test_throws ErrorException HolidayJp.between(Date("2000-01-02"), Date("2000-01-01"))
+        end
     end
 
 end
