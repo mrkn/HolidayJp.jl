@@ -3,6 +3,9 @@ uuid = "a0f9f270-aa2e-430a-aba3-8faa33662de6"
 authors = ["Kenta Murata <mrkn@mrkn.jp> and contributors"]
 version = "1.0.0-DEV"
 
+[deps]
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+
 [compat]
 julia = "1.6"
 
