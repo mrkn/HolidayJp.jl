@@ -32,6 +32,11 @@ Dates.day(d::DateLike) = d.day
             @test HolidayJp.isholiday(DateLike(2000, 1, 1)) === true
             @test HolidayJp.isholiday(DateLike(2000, 1, 2)) === false
         end
+
+        @testset "when the year, the month, and the day are specified separately" begin
+            @test HolidayJp.isholiday(2000, 1, 1) === true
+            @test HolidayJp.isholiday(2000, 1, 2) === false
+        end
     end
 
     @testset "getholiday" begin
@@ -39,12 +44,14 @@ Dates.day(d::DateLike) = d.day
             @test HolidayJp.getholiday(Date("2000-01-01")) isa HolidayJp.Holiday
             @test HolidayJp.getholiday(DateTime("2000-01-01", "yyyy-mm-dd")) isa HolidayJp.Holiday
             @test HolidayJp.getholiday(DateLike(2000, 1, 1)) isa HolidayJp.Holiday
+            @test HolidayJp.getholiday(2000, 1, 1) isa HolidayJp.Holiday
         end
 
         @testset "returns nothing when the given Date is not a holiday" begin
             @test HolidayJp.getholiday(Date("2000-01-02")) === nothing
             @test HolidayJp.getholiday(DateTime("2000-01-02", "yyyy-mm-dd")) === nothing
             @test HolidayJp.getholiday(DateLike(2000, 1, 2)) === nothing
+            @test HolidayJp.getholiday(2000, 1, 2) === nothing
         end
     end
 
