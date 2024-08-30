@@ -1,7 +1,7 @@
 module HolidayJp
 
 import Dates: Date, DateTime, Day, year, month, day
-import OrderedCollections: OrderedDict
+import OrderedCollections: OrderedDict, rehash!
 import YAML
 
 Base.@kwdef struct Holiday
@@ -20,37 +20,39 @@ function Holiday(params::AbstractDict)
             name_en=string(params["name_en"]))
 end
 
-const KeyType = NTuple{3, Int}
-const HolidayDict = OrderedDict{KeyType, Holiday}
-const HOLIDAYS = Ref{HolidayDict}()
+const HolidayDict = OrderedDict{Date, Holiday}
 
-_datelike(::Type{Date}, d::Date) = d
-_datelike(::Type{Date}, dl::T) where {T} = Date(year(dl), month(dl), day(dl))
+function load_holidays()
+    data_dir = joinpath(dirname(@__DIR__), "data")
+    dataset = YAML.load_file(joinpath(data_dir, "holidays_detailed.yml"); dicttype=OrderedDict{Any, Any})
+    HolidayDict(date => Holiday(params) for (date, params) in dataset)
+end
 
-_datelike(::Type{KeyType}, dl::T) where {T} = (year(dl), month(dl), day(dl))
+const HOLIDAYS = load_holidays()
 
-isholiday(key::KeyType) = haskey(HOLIDAYS[], key)
-isholiday(year::I, month::I, day::I) where {I<:Integer} = isholiday((Int(year), Int(month), Int(day)))
-isholiday(dl::DateLike) where {DateLike} = isholiday(_datelike(KeyType, dl)...)
+_datelike(d::Date) = d
+_datelike(dl::T) where {T} = Date(year(dl), month(dl), day(dl))
 
-getholiday(key::KeyType) = get(HOLIDAYS[], key, nothing)
-getholiday(year::I, month::I, day::I) where {I<:Integer} = getholiday((Int(year), Int(month), Int(day)))
-getholiday(dl::DateLike) where {DateLike} = getholiday(_datelike(KeyType, dl))
+isholiday(d::Date) = haskey(HOLIDAYS, d)
+isholiday(year::I, month::I, day::I) where {I<:Integer} = isholiday(Date(year, month, day))
+isholiday(dl::DateLike) where {DateLike} = isholiday(_datelike(dl))
+
+getholiday(d::Date) = get(HOLIDAYS, d, nothing)
+getholiday(year::I, month::I, day::I) where {I<:Integer} = getholiday(Date(year, month, day))
+getholiday(dl::DateLike) where {DateLike} = getholiday(_datelike(dl))
 
 function between(lower_limit::Date, upper_limit::Date)
     if lower_limit > upper_limit
         error("lower_limit must be earlier than upper_limit (lower_limit=$(lower_limit), upper_limit=$(upper_limit))")
     end
 
-    [h for h in values(HOLIDAYS[]) if lower_limit <= h.date <= upper_limit]
+    [h for h in values(HOLIDAYS) if lower_limit <= h.date <= upper_limit]
 end
 
-between(ll::LL, ul::UL) where {LL, UL} = between(_datelike(Date, ll), _datelike(Date, ul))
+between(ll::LL, ul::UL) where {LL, UL} = between(_datelike(ll), _datelike(ul))
 
 function __init__()
-    data_dir = joinpath(dirname(@__DIR__), "data")
-    dataset = YAML.load_file(joinpath(data_dir, "holidays_detailed.yml"); dicttype=OrderedDict{Any, Any})
-    HOLIDAYS[] = OrderedDict((year(date), month(date), day(date)) => Holiday(params) for (date, params) in dataset)
+    rehash!(HOLIDAYS)
 end
 
 end
