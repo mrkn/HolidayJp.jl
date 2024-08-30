@@ -24,13 +24,18 @@ const KeyType = NTuple{3, Int}
 const HolidayDict = OrderedDict{KeyType, Holiday}
 const HOLIDAYS = Ref{HolidayDict}()
 
+_datelike(::Type{Date}, d::Date) = d
+_datelike(::Type{Date}, dl::T) where {T} = Date(year(dl), month(dl), day(dl))
+
+_datelike(::Type{KeyType}, dl::T) where {T} = (year(dl), month(dl), day(dl))
+
 isholiday(key::KeyType) = haskey(HOLIDAYS[], key)
 isholiday(year::I, month::I, day::I) where {I<:Integer} = isholiday((Int(year), Int(month), Int(day)))
-isholiday(x) = isholiday(year(x), month(x), day(x))
+isholiday(dl::DateLike) where {DateLike} = isholiday(_datelike(KeyType, dl)...)
 
 getholiday(key::KeyType) = get(HOLIDAYS[], key, nothing)
 getholiday(year::I, month::I, day::I) where {I<:Integer} = getholiday((Int(year), Int(month), Int(day)))
-getholiday(x) = getholiday(year(x), month(x), day(x))
+getholiday(dl::DateLike) where {DateLike} = getholiday(_datelike(KeyType, dl))
 
 function between(lower_limit::Date, upper_limit::Date)
     if lower_limit > upper_limit
@@ -39,6 +44,8 @@ function between(lower_limit::Date, upper_limit::Date)
 
     [h for h in values(HOLIDAYS[]) if lower_limit <= h.date <= upper_limit]
 end
+
+between(ll::LL, ul::UL) where {LL, UL} = between(_datelike(Date, ll), _datelike(Date, ul))
 
 function __init__()
     data_dir = joinpath(dirname(@__DIR__), "data")

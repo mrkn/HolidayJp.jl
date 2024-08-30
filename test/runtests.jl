@@ -49,26 +49,39 @@ Dates.day(d::DateLike) = d.day
     end
 
     @testset "between" begin
+        expected = [
+            Date("2000-01-01"),
+            Date("2000-01-10"),
+            Date("2000-02-11"),
+            Date("2000-03-20"),
+            Date("2000-04-29"),
+            Date("2000-05-03"),
+            Date("2000-05-04"),
+            Date("2000-05-05"),
+            Date("2000-07-20"),
+            Date("2000-09-15"),
+            Date("2000-09-23"),
+            Date("2000-10-09"),
+            Date("2000-11-03"),
+            Date("2000-11-23"),
+            Date("2000-12-23")
+        ]
+
         @testset "returns all holidays when two Date objects are passed" begin
             result = HolidayJp.between(Date("2000-01-01"), Date("2000-12-31"))
             @test result isa Vector{HolidayJp.Holiday}
-            @test [h.date::Date for h in result] == [
-                Date("2000-01-01"),
-                Date("2000-01-10"),
-                Date("2000-02-11"),
-                Date("2000-03-20"),
-                Date("2000-04-29"),
-                Date("2000-05-03"),
-                Date("2000-05-04"),
-                Date("2000-05-05"),
-                Date("2000-07-20"),
-                Date("2000-09-15"),
-                Date("2000-09-23"),
-                Date("2000-10-09"),
-                Date("2000-11-03"),
-                Date("2000-11-23"),
-                Date("2000-12-23")
-            ]
+            @test [h.date::Date for h in result] == expected
+        end
+
+        @testset "accepts date-like objects as its arguments" begin
+            result = HolidayJp.between(Date(2000, 1, 1), DateLike(2000, 12, 31))
+            @test [h.date::Date for h in result] == expected
+
+            result = HolidayJp.between(DateLike(2000, 1, 1), Date(2000, 12, 31))
+            @test [h.date::Date for h in result] == expected
+
+            result = HolidayJp.between(DateLike(2000, 1, 1), DateLike(2000, 12, 31))
+            @test [h.date::Date for h in result] == expected
         end
 
         @testset "returns Holiday[] when the given range are out of scope" begin
